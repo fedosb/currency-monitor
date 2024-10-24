@@ -60,7 +60,15 @@ func run(ctx context.Context) error {
 		cfg.Fetcher,
 	)
 
-	fetchSvc.Init(ctx)
+	fetchSvc.Init(ctx, cfg.Fetcher.GetCurrencies())
+
+	if cfg.Fetcher.GetRunImmediately() {
+		log.Println("Running fetcher immediately...")
+		err := fetchSvc.FetchAndUpdateRates(ctx)
+		if err != nil {
+			return fmt.Errorf("running fetcher: %w", err)
+		}
+	}
 
 	grpcServer := grpcTransport.NewGRPCServer(rateSvc)
 

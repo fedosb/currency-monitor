@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -56,9 +57,8 @@ func NewFetcherService(
 
 // Init creates some initial fetch jobs.
 // This function will be get rid of when the API is implemented
-func (s *FetcherService) Init(ctx context.Context) {
-	names := []string{"usd", "algo", "grt"}
-	for _, name := range names {
+func (s *FetcherService) Init(ctx context.Context, currencyNames []string) {
+	for _, name := range currencyNames {
 		_, _ = s.jobRepository.Create(ctx, entity.FetchJob{
 			PlannedAt: time.Now().UTC(),
 			Name:      name,
@@ -118,6 +118,11 @@ func (s *FetcherService) processJob(ctx context.Context, job entity.FetchJob, ru
 			s.failJob(ctx, job, err.Error())
 		}
 	}()
+
+	if _, ok := rubRates.Rates[job.Name]; !ok {
+		err = errors.New("rate not found")
+		return err
+	}
 
 	rate := entity.Rate{
 		Name: job.Name,
