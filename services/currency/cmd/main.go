@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"os/signal"
 	"syscall"
 
@@ -50,18 +49,13 @@ func run(ctx context.Context) error {
 
 	rateSvc := service.NewRateService(rateRepo)
 
-	listener, err := net.Listen("tcp", ":50051")
-	if err != nil {
-		return fmt.Errorf("listen: %w", err)
-	}
-
 	grpcServer := grpcTransport.NewGRPCServer(rateSvc)
 
 	var runGroup errgroup.Group
 
 	runGroup.Go(func() error {
 		fmt.Println("Starting gRPC server...")
-		err := grpcServer.Serve(listener)
+		err := grpcServer.Serve(cfg.Net)
 		if err != nil {
 			return err
 		}

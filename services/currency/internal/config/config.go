@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	DB dbConfig
+	DB  dbConfig
+	Net netConfig
 }
 
 func New() (Config, error) {
