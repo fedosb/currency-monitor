@@ -54,6 +54,19 @@ func NewFetcherService(
 	}
 }
 
+// Init creates some initial fetch jobs.
+// This function will be get rid of when the API is implemented
+func (s *FetcherService) Init(ctx context.Context) {
+	names := []string{"usd", "algo", "grt"}
+	for _, name := range names {
+		_, _ = s.jobRepository.Create(ctx, entity.FetchJob{
+			PlannedAt: time.Now().UTC(),
+			Name:      name,
+			Status:    entity.JobStatusReady,
+		})
+	}
+}
+
 func (s *FetcherService) FetchAndUpdateRates(ctx context.Context) error {
 	jobs, err := s.jobRepository.GetPlanned(ctx)
 	if err != nil {

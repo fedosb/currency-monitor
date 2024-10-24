@@ -59,6 +59,8 @@ func run(ctx context.Context) error {
 		cfg.Fetcher,
 	)
 
+	fetchSvc.Init(ctx)
+
 	grpcServer := grpcTransport.NewGRPCServer(rateSvc)
 
 	scheduler := cron.NewScheduler(cfg.Fetcher, fetchSvc)

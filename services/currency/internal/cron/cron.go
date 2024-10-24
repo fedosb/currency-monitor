@@ -3,11 +3,12 @@ package cron
 import (
 	"context"
 	"fmt"
-	"github.com/fedosb/currency-monitor/services/currency/internal/config"
 	"log"
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
+
+	"github.com/fedosb/currency-monitor/services/currency/internal/config"
 )
 
 type Scheduler struct {
