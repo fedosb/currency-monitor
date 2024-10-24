@@ -8,7 +8,7 @@ type FetcherConfig interface {
 	GetJobRescheduleInterval() time.Duration
 	GetFailedJobRescheduleInterval() time.Duration
 	GetFailedJobMaxRetries() int
-	GetSaveRatesMaxWorkers() int
+	GetProcessJobMaxWorkers() int
 }
 
 type fetcherConfig struct {
@@ -17,7 +17,7 @@ type fetcherConfig struct {
 	JobRescheduleInterval       time.Duration `env-required:"true" env:"JOB_RESCHEDULE_INTERVAL"`
 	FailedJobRescheduleInterval time.Duration `env-required:"true" env:"FAILED_JOB_RESCHEDULE_INTERVAL"`
 	FailedJobMaxRetries         int           `env-required:"true" env:"FAILED_JOB_MAX_RETRIES"`
-	SaveRatesMaxWorkers         int           `env-required:"true" env:"SAVE_RATES_MAX_WORKERS"`
+	ProcessJobMaxWorkers        int           `env-required:"true" env:"PROCESS_JOB_MAX_WORKERS"`
 }
 
 func (c fetcherConfig) GetFetchInterval() time.Duration {
@@ -40,6 +40,6 @@ func (c fetcherConfig) GetFailedJobMaxRetries() int {
 	return c.FailedJobMaxRetries
 }
 
-func (c fetcherConfig) GetSaveRatesMaxWorkers() int {
-	return c.SaveRatesMaxWorkers
+func (c fetcherConfig) GetProcessJobMaxWorkers() int {
+	return c.ProcessJobMaxWorkers
 }

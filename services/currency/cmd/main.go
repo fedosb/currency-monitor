@@ -3,13 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/fedosb/currency-monitor/services/currency/internal/entity"
+	"golang.org/x/sync/errgroup"
 	"log"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"golang.org/x/sync/errgroup"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/config"
 	"github.com/fedosb/currency-monitor/services/currency/internal/cron"
@@ -51,24 +48,6 @@ func run(ctx context.Context) error {
 
 	rateRepo := repository.NewRateRepository(db)
 	fetchJobsRepo := repository.NewFetchJobRepository(db)
-
-	_, err = fetchJobsRepo.Create(ctx, entity.FetchJob{
-		PlannedAt: time.Now().UTC().Add(time.Second),
-		Name:      "usd",
-		Status:    entity.JobStatusReady,
-	})
-
-	_, err = fetchJobsRepo.Create(ctx, entity.FetchJob{
-		PlannedAt: time.Now().UTC().Add(time.Second * 15),
-		Name:      "algo",
-		Status:    entity.JobStatusReady,
-	})
-
-	_, err = fetchJobsRepo.Create(ctx, entity.FetchJob{
-		PlannedAt: time.Now().UTC().Add(time.Second * 15),
-		Name:      "grt",
-		Status:    entity.JobStatusReady,
-	})
 
 	currencyApiGateway := currency_api.New(cfg.CurrencyAPI)
 

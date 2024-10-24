@@ -3,12 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/fedosb/currency-monitor/services/currency/internal/config"
-	"github.com/fedosb/currency-monitor/services/currency/internal/entity"
 	"log"
+	"sync"
 	"time"
 
+	"golang.org/x/sync/semaphore"
+
+	"github.com/fedosb/currency-monitor/services/currency/internal/config"
 	"github.com/fedosb/currency-monitor/services/currency/internal/dto"
+	"github.com/fedosb/currency-monitor/services/currency/internal/entity"
 )
 
 type FetchJobRepository interface {
@@ -27,7 +30,7 @@ type FetcherService struct {
 	jobRescheduleInterval       time.Duration
 	failedJobRescheduleInterval time.Duration
 	failedJobMaxRetries         int
-	saveRatesMaxWorkers         int
+	processJobMaxWorkers        int
 }
 
 type CurrencyAPIGateway interface {
@@ -47,12 +50,11 @@ func NewFetcherService(
 		jobRescheduleInterval:       cfg.GetJobRescheduleInterval(),
 		failedJobRescheduleInterval: cfg.GetFailedJobRescheduleInterval(),
 		failedJobMaxRetries:         cfg.GetFailedJobMaxRetries(),
-		saveRatesMaxWorkers:         cfg.GetSaveRatesMaxWorkers(),
+		processJobMaxWorkers:        cfg.GetProcessJobMaxWorkers(),
 	}
 }
 
 func (s *FetcherService) FetchAndUpdateRates(ctx context.Context) error {
-
 	jobs, err := s.jobRepository.GetPlanned(ctx)
 	if err != nil {
 		return fmt.Errorf("get planned jobs: %w", err)
@@ -62,36 +64,55 @@ func (s *FetcherService) FetchAndUpdateRates(ctx context.Context) error {
 		return nil
 	}
 
+	// This application only supports RUB rates for now
 	rubRates, err := s.gateway.GetRubRates(ctx)
 	if err != nil {
 		return fmt.Errorf("get rub rates: %w", err)
 	}
 
-	// TODO: parallelize processing
-	for _, job := range jobs {
-		var err error
-		defer func() {
-			if err != nil {
-				s.failJob(ctx, job, err.Error())
-			}
-		}()
+	var (
+		wg  = sync.WaitGroup{}
+		sem = semaphore.NewWeighted(int64(s.processJobMaxWorkers))
+	)
 
-		if err = s.processJob(ctx, job, rubRates); err != nil {
-			log.Println("Failed to process job:", err)
+	for _, job := range jobs {
+		err := sem.Acquire(ctx, 1)
+		if err != nil {
+			return fmt.Errorf("acquiring semaphore: %w", err)
 		}
+
+		wg.Add(1)
+		go func(job entity.FetchJob) {
+			defer sem.Release(1)
+			defer wg.Done()
+
+			err := s.processJob(ctx, job, rubRates)
+			if err != nil {
+				log.Println("Error processing job:", err)
+			}
+		}(job)
 	}
+
+	wg.Wait()
 
 	return nil
 }
 
 func (s *FetcherService) processJob(ctx context.Context, job entity.FetchJob, rubRates dto.RubRates) error {
+	var err error
+	defer func() {
+		if err != nil {
+			s.failJob(ctx, job, err.Error())
+		}
+	}()
+
 	rate := entity.Rate{
 		Name: job.Name,
 		Date: rubRates.Date,
 		Rate: rubRates.Rates[job.Name],
 	}
 
-	_, err := s.rateService.Save(ctx, rate)
+	_, err = s.rateService.Save(ctx, rate)
 	if err != nil {
 		return fmt.Errorf("create rate: %w", err)
 	}
