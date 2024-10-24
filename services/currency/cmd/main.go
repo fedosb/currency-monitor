@@ -13,7 +13,7 @@ import (
 	"github.com/fedosb/currency-monitor/services/currency/internal/db/postgres"
 	"github.com/fedosb/currency-monitor/services/currency/internal/repository"
 	"github.com/fedosb/currency-monitor/services/currency/internal/service"
-	grpcTransport "github.com/fedosb/currency-monitor/services/currency/transport/grpc"
+	grpcTransport "github.com/fedosb/currency-monitor/services/currency/internal/transport/grpc"
 )
 
 func main() {
