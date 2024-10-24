@@ -6,7 +6,7 @@ CREATE TABLE fetch_jobs (
     id                  BIGSERIAL           PRIMARY KEY,
     created_at          TIMESTAMP           NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMP           NOT NULL DEFAULT NOW(),
-    name                VARCHAR(32)         NOT NULL,
+    name                VARCHAR(32)         NOT NULL UNIQUE,
     status              fetch_job_status    NOT NULL,
     planned_at          TIMESTAMP           NOT NULL,
     downloaded_at       TIMESTAMP,

@@ -3,6 +3,7 @@ package cron
 import (
 	"context"
 	"fmt"
+	"github.com/fedosb/currency-monitor/services/currency/internal/config"
 	"log"
 	"time"
 
@@ -12,18 +13,22 @@ import (
 type Scheduler struct {
 	scheduler gocron.Scheduler
 
-	fetchInterval  time.Duration
+	fetchInterval   time.Duration
+	requeueInterval time.Duration
+
 	fetcherService FetcherService
 }
 
 type FetcherService interface {
 	FetchAndUpdateRates(ctx context.Context) error
+	RequeueFailedJobs(ctx context.Context) error
 }
 
-func NewScheduler(interval time.Duration, svc FetcherService) *Scheduler {
+func NewScheduler(cfg config.FetcherConfig, svc FetcherService) *Scheduler {
 	s := &Scheduler{
-		fetchInterval:  interval,
-		fetcherService: svc,
+		fetchInterval:   cfg.GetFetchInterval(),
+		requeueInterval: cfg.GetJobRescheduleInterval(),
+		fetcherService:  svc,
 	}
 
 	return s
@@ -37,14 +42,18 @@ func (s *Scheduler) Setup(ctx context.Context) error {
 		return fmt.Errorf("new scheduler: %w", err)
 	}
 
-	if err = s.scheduleFetcher(ctx); err != nil {
-		return fmt.Errorf("set up scheduler: %w", err)
+	if err = s.setupFetchAndUpdateRates(ctx); err != nil {
+		return fmt.Errorf("set up fetch and update scheduler: %w", err)
+	}
+
+	if err = s.setupRequeueFailedJobs(ctx); err != nil {
+		return fmt.Errorf("set up requeue failed scheduler: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Scheduler) scheduleFetcher(ctx context.Context) error {
+func (s *Scheduler) setupFetchAndUpdateRates(ctx context.Context) error {
 	_, err := s.scheduler.NewJob(
 		gocron.DurationJob(s.fetchInterval),
 		gocron.NewTask(
@@ -55,6 +64,31 @@ func (s *Scheduler) scheduleFetcher(ctx context.Context) error {
 				defer cancel()
 
 				err := svc.FetchAndUpdateRates(ctx)
+				if err != nil {
+					log.Println(err)
+				}
+			}, s.fetcherService, ctx,
+		),
+		gocron.WithSingletonMode(gocron.LimitModeReschedule),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to schedule fetcher: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Scheduler) setupRequeueFailedJobs(ctx context.Context) error {
+	_, err := s.scheduler.NewJob(
+		gocron.DurationJob(s.requeueInterval),
+		gocron.NewTask(
+			func(svc FetcherService, ctx context.Context) {
+				log.Println("Requeuing failed jobs")
+
+				ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), s.requeueInterval)
+				defer cancel()
+
+				err := svc.RequeueFailedJobs(ctx)
 				if err != nil {
 					log.Println(err)
 				}

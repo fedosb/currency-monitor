@@ -85,7 +85,7 @@ func (r *RateRepository) Save(ctx context.Context, rate entity.Rate) (entity.Rat
 	query = r.db.Rebind(query)
 
 	if err = r.db.QueryRowxContext(ctx, query, args...).StructScan(&rateModel); err != nil {
-		return entity.Rate{}, err
+		return entity.Rate{}, fmt.Errorf("query execution: %w", err)
 	}
 
 	return rateModel.Entity(), nil

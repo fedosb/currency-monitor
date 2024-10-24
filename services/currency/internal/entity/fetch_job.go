@@ -14,6 +14,27 @@ type FetchJob struct {
 	Retries       *int
 }
 
+func (j *FetchJob) Succeed() {
+	now := time.Now().UTC()
+
+	j.Status = JobStatusReady
+	j.DownloadedAt = &now
+	j.FailureReason = nil
+	j.Retries = nil
+}
+
+func (j *FetchJob) Reschedule(interval time.Duration) {
+	j.PlannedAt = time.Now().UTC().Add(interval).Truncate(time.Second)
+}
+
+func (j *FetchJob) Fail(reason string) {
+	j.Status = JobStatusFailed
+	j.FailureReason = &reason
+	if j.Retries == nil {
+		j.Retries = new(int)
+	}
+}
+
 type JobStatus string
 
 const (

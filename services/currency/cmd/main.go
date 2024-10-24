@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/fedosb/currency-monitor/services/currency/internal/entity"
 	"log"
 	"os/signal"
 	"syscall"
@@ -49,15 +50,39 @@ func run(ctx context.Context) error {
 	}
 
 	rateRepo := repository.NewRateRepository(db)
+	fetchJobsRepo := repository.NewFetchJobRepository(db)
+
+	_, err = fetchJobsRepo.Create(ctx, entity.FetchJob{
+		PlannedAt: time.Now().UTC().Add(time.Second),
+		Name:      "usd",
+		Status:    entity.JobStatusReady,
+	})
+
+	_, err = fetchJobsRepo.Create(ctx, entity.FetchJob{
+		PlannedAt: time.Now().UTC().Add(time.Second * 15),
+		Name:      "algo",
+		Status:    entity.JobStatusReady,
+	})
+
+	_, err = fetchJobsRepo.Create(ctx, entity.FetchJob{
+		PlannedAt: time.Now().UTC().Add(time.Second * 15),
+		Name:      "grt",
+		Status:    entity.JobStatusReady,
+	})
 
 	currencyApiGateway := currency_api.New(cfg.CurrencyAPI)
 
 	rateSvc := service.NewRateService(rateRepo)
-	fetchSvc := service.NewFetcherService(currencyApiGateway, rateSvc)
+	fetchSvc := service.NewFetcherService(
+		currencyApiGateway,
+		fetchJobsRepo,
+		rateSvc,
+		cfg.Fetcher,
+	)
 
 	grpcServer := grpcTransport.NewGRPCServer(rateSvc)
 
-	scheduler := cron.NewScheduler(time.Second*5, fetchSvc)
+	scheduler := cron.NewScheduler(cfg.Fetcher, fetchSvc)
 	err = scheduler.Setup(ctx)
 	if err != nil {
 		return fmt.Errorf("scheduler setup: %w", err)
