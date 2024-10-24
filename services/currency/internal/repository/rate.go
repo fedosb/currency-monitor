@@ -7,8 +7,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/fedosb/currency-monitor/services/currency/entity"
 	"github.com/fedosb/currency-monitor/services/currency/internal/db/postgres"
+	"github.com/fedosb/currency-monitor/services/currency/internal/entity"
 )
 
 type RateRepository struct {
