@@ -65,7 +65,7 @@ func (l rateList) Entities() []entity.Rate {
 	return rates
 }
 
-func (r *RateRepository) Create(ctx context.Context, rate entity.Rate) (entity.Rate, error) {
+func (r *RateRepository) Save(ctx context.Context, rate entity.Rate) (entity.Rate, error) {
 	rateModel := mapRate(rate)
 
 	query, args, err := sqlx.Named(
@@ -85,7 +85,7 @@ func (r *RateRepository) Create(ctx context.Context, rate entity.Rate) (entity.R
 	query = r.db.Rebind(query)
 
 	if err = r.db.QueryRowxContext(ctx, query, args...).StructScan(&rateModel); err != nil {
-		return entity.Rate{}, err
+		return entity.Rate{}, fmt.Errorf("query execution: %w", err)
 	}
 
 	return rateModel.Entity(), nil

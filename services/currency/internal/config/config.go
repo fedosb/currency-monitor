@@ -7,13 +7,17 @@ import (
 )
 
 type Config struct {
-	DB  DBConfig
-	Net NetConfig
+	DB          DBConfig
+	Net         NetConfig
+	CurrencyAPI CurrencyApiConfig
+	Fetcher     FetcherConfig
 }
 
 type config struct {
-	DB  dbConfig
-	Net netConfig
+	DB          dbConfig
+	Net         netConfig
+	CurrencyApi currencyApiConfig
+	Fetcher     fetcherConfig
 }
 
 func New() (Config, error) {
@@ -24,8 +28,12 @@ func New() (Config, error) {
 		return Config{}, fmt.Errorf("read env: %w", err)
 	}
 
+	fmt.Printf("Config: %+v\n", cfg)
+
 	return Config{
-		DB:  cfg.DB,
-		Net: cfg.Net,
+		DB:          cfg.DB,
+		Net:         cfg.Net,
+		CurrencyAPI: cfg.CurrencyApi,
+		Fetcher:     cfg.Fetcher,
 	}, nil
 }

@@ -14,13 +14,22 @@ type RateService struct {
 }
 
 type RateRepository interface {
-	Create(ctx context.Context, rate entity.Rate) (entity.Rate, error)
+	Save(ctx context.Context, rate entity.Rate) (entity.Rate, error)
 	GetByNameAndDate(ctx context.Context, name string, date time.Time) (entity.Rate, error)
 	GetByNameAndDateRange(ctx context.Context, name string, from, to time.Time) ([]entity.Rate, error)
 }
 
 func NewRateService(repository RateRepository) *RateService {
 	return &RateService{repository: repository}
+}
+
+func (s *RateService) Save(ctx context.Context, rate entity.Rate) (entity.Rate, error) {
+	rate, err := s.repository.Save(ctx, rate)
+	if err != nil {
+		return entity.Rate{}, fmt.Errorf("create in repository: %w", err)
+	}
+
+	return rate, nil
 }
 
 func (s *RateService) GetByNameAndDate(ctx context.Context, request dto.GetByNameAndDateRequest) (dto.GetByNameAndDateResponse, error) {

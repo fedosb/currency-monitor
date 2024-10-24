@@ -3,17 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"log"
 	"os/signal"
 	"syscall"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/fedosb/currency-monitor/services/currency/internal/config"
+	"github.com/fedosb/currency-monitor/services/currency/internal/cron"
 	"github.com/fedosb/currency-monitor/services/currency/internal/db/postgres"
+	"github.com/fedosb/currency-monitor/services/currency/internal/gateway/currency_api"
 	"github.com/fedosb/currency-monitor/services/currency/internal/repository"
 	"github.com/fedosb/currency-monitor/services/currency/internal/service"
-	grpcTransport "github.com/fedosb/currency-monitor/services/currency/transport/grpc"
+	grpcTransport "github.com/fedosb/currency-monitor/services/currency/internal/transport/grpc"
 )
 
 func main() {
@@ -39,22 +40,38 @@ func run(ctx context.Context) error {
 	}
 
 	if cfg.DB.GetApplyMigrations() {
-		fmt.Println("Applying migrations...")
+		log.Println("Applying migrations...")
 		if err := db.ApplyMigrations(); err != nil {
 			return fmt.Errorf("applying migrations: %w", err)
 		}
 	}
 
 	rateRepo := repository.NewRateRepository(db)
+	fetchJobsRepo := repository.NewFetchJobRepository(db)
+
+	currencyApiGateway := currency_api.New(cfg.CurrencyAPI)
 
 	rateSvc := service.NewRateService(rateRepo)
+	fetchSvc := service.NewFetcherService(
+		currencyApiGateway,
+		fetchJobsRepo,
+		rateSvc,
+		cfg.Fetcher,
+	)
+
+	fetchSvc.Init(ctx)
 
 	grpcServer := grpcTransport.NewGRPCServer(rateSvc)
 
-	var runGroup errgroup.Group
+	scheduler := cron.NewScheduler(cfg.Fetcher, fetchSvc)
+	err = scheduler.Setup(ctx)
+	if err != nil {
+		return fmt.Errorf("scheduler setup: %w", err)
+	}
 
+	var runGroup errgroup.Group
 	runGroup.Go(func() error {
-		fmt.Println("Starting gRPC server...")
+		log.Println("Starting gRPC server...")
 		err := grpcServer.Serve(cfg.Net)
 		if err != nil {
 			return err
@@ -64,10 +81,22 @@ func run(ctx context.Context) error {
 	})
 
 	runGroup.Go(func() error {
+		log.Println("Starting scheduler...")
+		scheduler.Start()
+		return nil
+	})
+
+	runGroup.Go(func() error {
 		<-ctx.Done()
 
+		log.Println("Shutting down scheduler...")
+		err := scheduler.Stop()
+		if err != nil {
+			log.Println("scheduler stop:", err)
+		}
+
+		log.Println("Shutting down gRPC server...")
 		grpcServer.GracefulStop()
-		fmt.Println("gRPC server has been stopped")
 
 		return nil
 	})
