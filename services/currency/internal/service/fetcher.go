@@ -22,7 +22,7 @@ func NewFetcherService(gateway CurrencyAPIGateway, rateSvc *RateService) *Fetche
 	return &FetcherService{Gateway: gateway, RateService: rateSvc}
 }
 
-func (s *FetcherService) Run(ctx context.Context) error {
+func (s *FetcherService) FetchAndUpdateRates(ctx context.Context) error {
 
 	rubRates, err := s.Gateway.GetRubRates(ctx)
 	if err != nil {

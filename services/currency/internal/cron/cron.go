@@ -17,7 +17,7 @@ type Scheduler struct {
 }
 
 type FetcherService interface {
-	Run(ctx context.Context) error
+	FetchAndUpdateRates(ctx context.Context) error
 }
 
 func NewScheduler(interval time.Duration, svc FetcherService) *Scheduler {
@@ -54,7 +54,7 @@ func (s *Scheduler) scheduleFetcher(ctx context.Context) error {
 				ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), s.fetchInterval)
 				defer cancel()
 
-				err := svc.Run(ctx)
+				err := svc.FetchAndUpdateRates(ctx)
 				if err != nil {
 					log.Println(err)
 				}
