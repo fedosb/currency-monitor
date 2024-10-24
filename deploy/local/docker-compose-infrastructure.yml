@@ -1,0 +1,36 @@
+version: "3.7"
+
+services:
+  # Postgres
+  postgres:
+    container_name: currency-monitor-postgres
+    image: postgres
+    restart: unless-stopped
+    volumes:
+      - .data/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_DB: 'postgres'
+    ports:
+      - '5432:5432'
+    networks:
+      - currency-monitor-network
+
+  # Adminer – UI for database management
+  adminer:
+    image: adminer
+    container_name: currency-monitor-adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DESIGN: 'dracula'
+    ports:
+      - '5051:8080'
+    depends_on:
+      - postgres
+    networks:
+      - currency-monitor-network
+
+networks:
+  currency-monitor-network:
+    driver: bridge
