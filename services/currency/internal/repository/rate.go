@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +11,7 @@ import (
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/db/postgres"
 	"github.com/fedosb/currency-monitor/services/currency/internal/entity"
+	errsinternal "github.com/fedosb/currency-monitor/services/currency/internal/errors"
 )
 
 type RateRepository struct {
@@ -96,7 +99,10 @@ func (r *RateRepository) GetByNameAndDate(ctx context.Context, name string, date
 		`SELECT * FROM rates WHERE name = $1 AND date = $2`,
 		name, date)
 	if err != nil {
-		// TODO: handle no rows error
+		if errors.Is(err, sql.ErrNoRows) {
+			return entity.Rate{}, errsinternal.NotFoundError
+		}
+
 		return entity.Rate{}, fmt.Errorf("select rate: %w", err)
 	}
 
