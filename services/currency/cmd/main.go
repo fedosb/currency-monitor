@@ -38,7 +38,7 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("creating db: %w", err)
 	}
 
-	if cfg.DB.Migrate() {
+	if cfg.DB.GetApplyMigrations() {
 		fmt.Println("Applying migrations...")
 		if err := db.ApplyMigrations(); err != nil {
 			return fmt.Errorf("applying migrations: %w", err)

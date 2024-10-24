@@ -6,11 +6,11 @@ import (
 )
 
 type DBConfig interface {
-	DSN() string
-	MaxOpenConns(defaultValue int) int
-	MaxIdleConns(defaultValue int) int
-	MaxConnLifetime(defaultValue time.Duration) time.Duration
-	Migrate() bool
+	GetDSN() string
+	GetMaxOpenConnections(defaultValue int) int
+	GetMaxIdleConnections(defaultValue int) int
+	GetMaxConnectionLifetime(defaultValue time.Duration) time.Duration
+	GetApplyMigrations() bool
 }
 
 type dbConfig struct {
@@ -26,7 +26,7 @@ type dbConfig struct {
 	ApplyMigrations       bool          `env:"DB_APPLY_MIGRATIONS"`
 }
 
-func (c dbConfig) DSN() string {
+func (c dbConfig) GetDSN() string {
 	return fmt.Sprintf(`host=%s port=%d user=%s password=%s dbname=%s sslmode=%s`,
 		c.Host,
 		c.Port,
@@ -37,7 +37,7 @@ func (c dbConfig) DSN() string {
 	)
 }
 
-func (c dbConfig) MaxOpenConns(defaultValue int) int {
+func (c dbConfig) GetMaxOpenConnections(defaultValue int) int {
 	if c.MaxOpenConnections == 0 {
 		return defaultValue
 	}
@@ -45,7 +45,7 @@ func (c dbConfig) MaxOpenConns(defaultValue int) int {
 	return c.MaxIdleConnections
 }
 
-func (c dbConfig) MaxIdleConns(defaultValue int) int {
+func (c dbConfig) GetMaxIdleConnections(defaultValue int) int {
 	if c.MaxIdleConnections == 0 {
 		return defaultValue
 	}
@@ -53,7 +53,7 @@ func (c dbConfig) MaxIdleConns(defaultValue int) int {
 	return c.MaxIdleConnections
 }
 
-func (c dbConfig) MaxConnLifetime(defaultValue time.Duration) time.Duration {
+func (c dbConfig) GetMaxConnectionLifetime(defaultValue time.Duration) time.Duration {
 	if c.MaxConnectionLifetime == 0 {
 		return defaultValue
 	}
@@ -61,6 +61,6 @@ func (c dbConfig) MaxConnLifetime(defaultValue time.Duration) time.Duration {
 	return c.MaxConnectionLifetime
 }
 
-func (c dbConfig) Migrate() bool {
+func (c dbConfig) GetApplyMigrations() bool {
 	return c.ApplyMigrations
 }

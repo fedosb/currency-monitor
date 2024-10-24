@@ -21,14 +21,14 @@ type DB struct {
 
 func New(cfg config.DBConfig) (*DB, error) {
 
-	db, err := sqlx.Connect(postgresDriver, cfg.DSN())
+	db, err := sqlx.Connect(postgresDriver, cfg.GetDSN())
 	if err != nil {
 		return nil, fmt.Errorf("connect to db: %w", err)
 	}
 
-	db.SetMaxOpenConns(cfg.MaxOpenConns(100))
-	db.SetMaxIdleConns(cfg.MaxIdleConns(10))
-	db.SetConnMaxLifetime(cfg.MaxConnLifetime(0))
+	db.SetMaxOpenConns(cfg.GetMaxOpenConnections(100))
+	db.SetMaxIdleConns(cfg.GetMaxIdleConnections(10))
+	db.SetConnMaxLifetime(cfg.GetMaxConnectionLifetime(0))
 
 	return &DB{db}, nil
 }
