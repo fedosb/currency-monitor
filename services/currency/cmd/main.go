@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/fedosb/currency-monitor/services/currency/internal/db/postgres"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/config"
+	"github.com/fedosb/currency-monitor/services/currency/internal/db/postgres"
 )
 
 func main() {
