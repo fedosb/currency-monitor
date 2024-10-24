@@ -7,13 +7,15 @@ import (
 )
 
 type Config struct {
-	DB  DBConfig
-	Net NetConfig
+	DB          DBConfig
+	Net         NetConfig
+	CurrencyAPI CurrencyApiConfig
 }
 
 type config struct {
-	DB  dbConfig
-	Net netConfig
+	DB          dbConfig
+	Net         netConfig
+	CurrencyApi currencyApiConfig
 }
 
 func New() (Config, error) {
@@ -25,7 +27,8 @@ func New() (Config, error) {
 	}
 
 	return Config{
-		DB:  cfg.DB,
-		Net: cfg.Net,
+		DB:          cfg.DB,
+		Net:         cfg.Net,
+		CurrencyAPI: cfg.CurrencyApi,
 	}, nil
 }
