@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"log"
 	"os/signal"
 	"syscall"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/config"
 	"github.com/fedosb/currency-monitor/services/currency/internal/cron"
