@@ -34,6 +34,7 @@ func (s *FetcherService) Run(ctx context.Context) error {
 	rate := entity.Rate{
 		Name: usd,
 		Date: rubRates.Date,
+		Rate: rubRates.Rates[usd],
 	}
 
 	_, err = s.RateService.Save(ctx, rate)
