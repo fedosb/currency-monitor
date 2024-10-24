@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  auth-generator:
+    image: andrianovartemii/gm-test-task-auth-generator:latest
+    container_name: currency-monitor-auth-generator
+    ports:
+      - "8082:8080"
+    environment:
+      AUTH_TOKEN_LIFETIME: 2
+    networks:
+      - currency-monitor-network
+
+networks:
+  currency-monitor-network:
+    driver: bridge
