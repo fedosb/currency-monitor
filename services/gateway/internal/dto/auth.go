@@ -24,5 +24,5 @@ type SignInResponse struct {
 }
 
 type ValidateTokenRequest struct {
-	Token string `json:"token"`
+	Token string
 }

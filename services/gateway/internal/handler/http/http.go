@@ -29,7 +29,6 @@ type CurrencyService interface {
 func NewHandler(authSvc AuthService, currencySvc CurrencyService) *Handler {
 	router := gin.Default()
 
-	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
 	h := Handler{
