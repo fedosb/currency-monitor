@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"errors"
 	"time"
 )
 
@@ -15,20 +14,8 @@ type Rate struct {
 }
 
 type GetByNameAndDateRequest struct {
-	Name string    `json:"name"`
-	Date time.Time `json:"date"`
-}
-
-func (r GetByNameAndDateRequest) Validate() error {
-	if r.Name == "" {
-		return errors.New("empty name")
-	}
-
-	if r.Date.IsZero() {
-		return errors.New("empty date")
-	}
-
-	return nil
+	Name string
+	Date time.Time
 }
 
 type GetByNameAndDateResponse struct {
@@ -36,25 +23,9 @@ type GetByNameAndDateResponse struct {
 }
 
 type GetByNameAndDateRangeRequest struct {
-	Name string    `json:"name"`
-	From time.Time `json:"from"`
-	To   time.Time `json:"to"`
-}
-
-func (r GetByNameAndDateRangeRequest) Validate() error {
-	if r.Name == "" {
-		return errors.New("empty name")
-	}
-
-	if r.From.IsZero() {
-		return errors.New("empty from")
-	}
-
-	if r.To.IsZero() {
-		return errors.New("empty to")
-	}
-
-	return nil
+	Name string
+	From time.Time
+	To   time.Time
 }
 
 type GetByNameAndDateRangeResponse struct {

@@ -1,13 +1,13 @@
 package config
 
-type CurrencyApiConfig interface {
+type AuthApiConfig interface {
 	GetURL() string
 }
 
-type currencyApiConfig struct {
-	URL string `env-required:"true" env:"CURRENCY_API_URL"`
+type authApiConfig struct {
+	URL string `env-required:"true" env:"AUTH_API_URL"`
 }
 
-func (c currencyApiConfig) GetURL() string {
+func (c authApiConfig) GetURL() string {
 	return c.URL
 }

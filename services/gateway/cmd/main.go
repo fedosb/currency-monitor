@@ -2,15 +2,18 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/fedosb/currency-monitor/services/gateway/internal/gateway/auth"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/gateway/currency"
+	handlerhttp "github.com/fedosb/currency-monitor/services/gateway/internal/handler/http"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/repository"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/service"
 )
@@ -35,32 +38,46 @@ func run(ctx context.Context) error {
 	authSvc := service.NewAuthService(repo, authGW)
 	currencySvc := service.NewCurrencyService(currencyGW)
 
-	res, err := currencySvc.GetRateByNameAndDateRange(ctx, dto.GetByNameAndDateRangeRequest{
-		Name: "usd",
-		From: time.Now().Add(-time.Hour * 24),
-		To:   time.Now(),
-	})
-	fmt.Println(res, err)
+	err := authSvc.Init(ctx)
+	if err != nil {
+		return fmt.Errorf("auth service init: %w", err)
+	}
 
-	res2, err := currencySvc.GetRateByNameAndDate(ctx, dto.GetByNameAndDateRequest{
-		Name: "usd",
-		Date: time.Now(),
-	})
-	fmt.Println(res2, err)
+	handler := handlerhttp.NewHandler(authSvc, currencySvc)
 
-	err = authSvc.Init(ctx)
-	fmt.Println(err)
+	httpServer := http.Server{
+		Addr:    ":8081",
+		Handler: handler.HTTPHandler(),
+	}
 
-	token, err := authSvc.SignIn(ctx, dto.SignInRequest{
-		Login:    "fedor",
-		Password: "qwerty",
-	})
-	fmt.Println(token, err)
+	var runGroup errgroup.Group
+	runGroup.Go(func() error {
+		err := httpServer.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("http server: %w", err)
+		}
 
-	err = authSvc.ValidateToken(ctx, dto.ValidateTokenRequest{
-		Token: token.Token,
+		return nil
 	})
-	fmt.Println(err)
+
+	runGroup.Go(func() error {
+		<-ctx.Done()
+
+		stopCtx := context.Background()
+
+		log.Println("Shutting down http server...")
+		err := httpServer.Shutdown(stopCtx)
+		if err != nil {
+			return fmt.Errorf("http server shutdown: %w", err)
+		}
+
+		return nil
+	})
+
+	err = runGroup.Wait()
+	if err != nil {
+		return fmt.Errorf("run group: %w", err)
+	}
 
 	return nil
 }
