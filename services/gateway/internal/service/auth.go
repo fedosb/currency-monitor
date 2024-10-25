@@ -6,6 +6,7 @@ import (
 
 	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/entity"
+	errsinternal "github.com/fedosb/currency-monitor/services/gateway/internal/errors"
 	hashutil "github.com/fedosb/currency-monitor/services/gateway/internal/utils/hash"
 )
 
@@ -60,16 +61,20 @@ func (s *AuthService) Init(ctx context.Context) error {
 func (s *AuthService) SignIn(ctx context.Context, req dto.SignInRequest) (dto.SignInResponse, error) {
 	err := req.Validate()
 	if err != nil {
-		return dto.SignInResponse{}, fmt.Errorf("validate request: %w", err)
+		return dto.SignInResponse{}, fmt.Errorf("validate request: %w",
+			errsinternal.NewAuthErrorWithCause(err, errsinternal.AuthErrInvalidLoginOrPasswordMsg),
+		)
 	}
 
 	user, err := s.userRepository.GetByLogin(ctx, req.Login)
 	if err != nil {
-		return dto.SignInResponse{}, fmt.Errorf("get user by login: %w", err)
+		return dto.SignInResponse{}, fmt.Errorf("get user by login: %w",
+			errsinternal.NewAuthErrorWithCause(err, errsinternal.AuthErrInvalidLoginOrPasswordMsg),
+		)
 	}
 
 	if !hashutil.CheckPasswordHash(req.Password, user.PasswordHash) {
-		return dto.SignInResponse{}, fmt.Errorf("invalid password")
+		return dto.SignInResponse{}, errsinternal.NewAuthError(errsinternal.AuthErrInvalidLoginOrPasswordMsg)
 	}
 
 	token, err := s.authGateway.GenerateToken(ctx, user.Login)
@@ -83,7 +88,9 @@ func (s *AuthService) SignIn(ctx context.Context, req dto.SignInRequest) (dto.Si
 func (s *AuthService) ValidateToken(ctx context.Context, req dto.ValidateTokenRequest) error {
 	err := s.authGateway.ValidateToken(ctx, req.Token)
 	if err != nil {
-		return fmt.Errorf("validate token: %w", err)
+		return fmt.Errorf("validate token: %w",
+			errsinternal.NewAuthErrorWithCause(err, errsinternal.AuthErrorTokenExpiredMsg),
+		)
 	}
 
 	return nil

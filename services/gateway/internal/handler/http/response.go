@@ -31,10 +31,14 @@ func respondError(c *gin.Context, err error) {
 	)
 
 	currencyError := &errsinternal.CurrencyError{}
+	authError := &errsinternal.AuthError{}
 	switch {
 	case errors.As(err, &currencyError):
 		msg = currencyError.Error()
 		code = codeutil.GRPCCodeToHTTPStatus(currencyError.Code)
+	case errors.As(err, &authError):
+		msg = authError.Message
+		code = http.StatusUnauthorized
 	default:
 		code = http.StatusInternalServerError
 		msg = errsinternal.DefaultError.Error()
