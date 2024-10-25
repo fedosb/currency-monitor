@@ -33,6 +33,10 @@ func (s *RateService) Save(ctx context.Context, rate entity.Rate) (entity.Rate, 
 }
 
 func (s *RateService) GetByNameAndDate(ctx context.Context, request dto.GetByNameAndDateRequest) (dto.GetByNameAndDateResponse, error) {
+	if err := request.Validate(); err != nil {
+		return dto.GetByNameAndDateResponse{}, fmt.Errorf("validate request: %w", err)
+	}
+
 	rate, err := s.repository.GetByNameAndDate(ctx, request.Name, request.Date)
 	if err != nil {
 		return dto.GetByNameAndDateResponse{}, fmt.Errorf("get from repository: %w", err)

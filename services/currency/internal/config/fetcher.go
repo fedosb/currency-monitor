@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
@@ -53,7 +52,6 @@ func (c fetcherConfig) GetProcessJobMaxWorkers() int {
 }
 
 func (c fetcherConfig) GetCurrencies() []string {
-	fmt.Println("c.Currencies", c.Currencies)
 	return strings.Split(c.Currencies, ",")
 }
 

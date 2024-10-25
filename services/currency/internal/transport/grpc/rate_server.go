@@ -3,7 +3,7 @@ package transport
 import (
 	"context"
 	"fmt"
-
+	errsinternal "github.com/fedosb/currency-monitor/services/currency/internal/errors"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/dto"
@@ -29,12 +29,12 @@ func (s *RateServer) GetByNameAndDate(ctx context.Context, req *pb.GetByNameAndD
 
 	request, err := decodeGetByNameAndDateRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("decode request: %w", err)
+		return nil, handleError(fmt.Errorf("decode request: %w", err))
 	}
 
 	response, err := s.svc.GetByNameAndDate(ctx, request.(dto.GetByNameAndDateRequest))
 	if err != nil {
-		return nil, fmt.Errorf("get by name and date: %w", err)
+		return nil, handleError(fmt.Errorf("get by name and date: %w", err))
 	}
 
 	return encodeGetByNameAndDateResponse(response), nil
@@ -42,7 +42,7 @@ func (s *RateServer) GetByNameAndDate(ctx context.Context, req *pb.GetByNameAndD
 
 func decodeGetByNameAndDateRequest(req *pb.GetByNameAndDateRequest) (interface{}, error) {
 	if req.GetDate() == nil {
-		return nil, fmt.Errorf("missing date")
+		return nil, errsinternal.NewValidationError("date is required")
 	}
 
 	return dto.GetByNameAndDateRequest{
@@ -67,12 +67,12 @@ func encodeGetByNameAndDateResponse(resp dto.GetByNameAndDateResponse) *pb.GetBy
 func (s *RateServer) GetByNameAndDateRange(ctx context.Context, req *pb.GetByNameAndDateRangeRequest) (*pb.GetByNameAndDateRangeResponse, error) {
 	request, err := decodeGetByNameAndDateRangeRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("decode request: %w", err)
+		return nil, handleError(fmt.Errorf("decode request: %w", err))
 	}
 
 	response, err := s.svc.GetByNameAndDateRange(ctx, request)
 	if err != nil {
-		return nil, fmt.Errorf("get by name and date range: %w", err)
+		return nil, handleError(fmt.Errorf("get by name and date range: %w", err))
 	}
 
 	return encodeGetByNameAndDateRangeResponse(response), nil
@@ -80,11 +80,11 @@ func (s *RateServer) GetByNameAndDateRange(ctx context.Context, req *pb.GetByNam
 
 func decodeGetByNameAndDateRangeRequest(req *pb.GetByNameAndDateRangeRequest) (dto.GetByNameAndDateRangeRequest, error) {
 	if req.GetFrom() == nil {
-		return dto.GetByNameAndDateRangeRequest{}, fmt.Errorf("missing from")
+		return dto.GetByNameAndDateRangeRequest{}, errsinternal.NewValidationError("missing from")
 	}
 
 	if req.GetTo() == nil {
-		return dto.GetByNameAndDateRangeRequest{}, fmt.Errorf("missing to")
+		return dto.GetByNameAndDateRangeRequest{}, errsinternal.NewValidationError("missing to")
 	}
 
 	return dto.GetByNameAndDateRangeRequest{
