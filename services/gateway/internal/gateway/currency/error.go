@@ -16,5 +16,5 @@ func wrapError(err error) error {
 		return err
 	}
 
-	return errsinternal.NewCurrencyError(st.Message(), st.Code())
+	return errsinternal.NewGatewayError(st.Message(), st.Code())
 }

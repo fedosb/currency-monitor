@@ -30,7 +30,7 @@ func respondError(c *gin.Context, err error) {
 		code int
 	)
 
-	currencyError := &errsinternal.CurrencyError{}
+	currencyError := &errsinternal.GatewayError{}
 	authError := &errsinternal.AuthError{}
 	switch {
 	case errors.As(err, &currencyError):
