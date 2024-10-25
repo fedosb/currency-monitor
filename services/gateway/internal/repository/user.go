@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"sync"
 
@@ -19,15 +20,19 @@ func NewUserRepository() *UserRepository {
 	}
 }
 
-func (r *UserRepository) Create(user entity.User) error {
+func (r *UserRepository) Create(_ context.Context, user entity.User) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+
+	if _, ok := r.Users[user.Login]; ok {
+		return errors.New("user already exists")
+	}
 
 	r.Users[user.Login] = user
 	return nil
 }
 
-func (r *UserRepository) GetByLogin(login string) (entity.User, error) {
+func (r *UserRepository) GetByLogin(_ context.Context, login string) (entity.User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

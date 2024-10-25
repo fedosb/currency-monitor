@@ -54,12 +54,14 @@ func (g *Gateway) request(ctx context.Context, path string, headers map[string]s
 	defer resp.Body.Close()
 
 	var response string
-	if _, err := fmt.Fscan(resp.Body, &response); err != nil {
-		return "", fmt.Errorf("scan token: %w", err)
+	if resp.ContentLength != 0 {
+		if _, err := fmt.Fscan(resp.Body, &response); err != nil {
+			return "", fmt.Errorf("scan response: %w", err)
+		}
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("got: %d with response %s", resp.StatusCode, response)
+		return "", fmt.Errorf("got %d with response: %s", resp.StatusCode, response)
 	}
 
 	return response, nil
