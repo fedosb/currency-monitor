@@ -1,8 +1,13 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
+	"errors"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	errsinternal "github.com/fedosb/currency-monitor/services/gateway/internal/errors"
+	codeutil "github.com/fedosb/currency-monitor/services/gateway/internal/utils/codes"
 )
 
 type jsonResponse struct {
@@ -15,6 +20,29 @@ func respond(c *gin.Context, status int, data any) {
 }
 
 func respondError(c *gin.Context, err error) {
-	msg := err.Error()
-	c.JSON(http.StatusBadRequest, jsonResponse{Error: &msg})
+	if err == nil {
+		c.JSON(http.StatusInternalServerError, jsonResponse{})
+		return
+	}
+
+	var (
+		msg  string
+		code int
+	)
+
+	currencyError := &errsinternal.GatewayError{}
+	authError := &errsinternal.AuthError{}
+	switch {
+	case errors.As(err, &currencyError):
+		msg = currencyError.Error()
+		code = codeutil.GRPCCodeToHTTPStatus(currencyError.Code)
+	case errors.As(err, &authError):
+		msg = authError.Message
+		code = http.StatusUnauthorized
+	default:
+		code = http.StatusInternalServerError
+		msg = errsinternal.DefaultError.Error()
+	}
+
+	c.JSON(code, jsonResponse{Error: &msg})
 }

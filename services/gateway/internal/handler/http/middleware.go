@@ -1,13 +1,16 @@
 package http
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
+	errsinternal "github.com/fedosb/currency-monitor/services/gateway/internal/errors"
 )
+
+const AuthorizationHeader = "Authorization"
 
 func (h *Handler) authMiddleware(c *gin.Context) {
 	var err error
@@ -17,10 +20,11 @@ func (h *Handler) authMiddleware(c *gin.Context) {
 		}
 	}()
 
-	bearerToken := strings.Split(c.GetHeader("Authorization"), " ")
+	bearerToken := strings.Split(c.GetHeader(AuthorizationHeader), " ")
 	if len(bearerToken) != 2 {
-		err = errors.New("invalid token format, use Bearer <token>")
-		respondError(c, err)
+		err = errsinternal.NewAuthError(errsinternal.AuthErrorInvalidTokenFormatMsg)
+
+		respondError(c, fmt.Errorf("invalid authorization header: %s", err))
 		c.Abort()
 		return
 	}

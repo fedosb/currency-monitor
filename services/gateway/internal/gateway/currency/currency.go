@@ -34,7 +34,7 @@ func (g *Gateway) GetRateByNameAndDate(ctx context.Context, name string, date ti
 		Date: timestamppb.New(date),
 	})
 	if err != nil {
-		return dto.Rate{}, fmt.Errorf("making grpc call: %w", err)
+		return dto.Rate{}, fmt.Errorf("making grpc call: %w", wrapError(err))
 	}
 
 	rate, err := decodeGetByNameAndDateResponse(resp)
@@ -74,7 +74,7 @@ func (g *Gateway) GetRateByNameAndDateRange(ctx context.Context, name string, fr
 		To:   timestamppb.New(to),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("making grpc call: %w", err)
+		return nil, fmt.Errorf("making grpc call: %w", wrapError(err))
 	}
 
 	rates, err := decodeGetByNameAndDateRangeResponse(resp)
@@ -103,7 +103,7 @@ func decodeGetByNameAndDateRangeResponse(resp *pb.GetByNameAndDateRangeResponse)
 }
 
 func (g *Gateway) connect(ctx context.Context) (*grpc.ClientConn, error) {
-	conn, err := grpc.DialContext(
+	conn, err := grpc.DialContext( // nolint:staticcheck
 		ctx,
 		g.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),

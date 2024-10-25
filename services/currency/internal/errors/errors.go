@@ -3,6 +3,6 @@ package errors
 import "errors"
 
 var (
-	InvalidDateRangeError = errors.New("invalid date range")
-	NotFoundError         = errors.New("not found")
+	ErrNotFound = errors.New("not found")
+	ErrDefault  = errors.New("something went wrong")
 )

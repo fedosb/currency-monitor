@@ -16,7 +16,6 @@ func New(url string) *Gateway {
 }
 
 func (g *Gateway) GenerateToken(ctx context.Context, login string) (string, error) {
-
 	path := fmt.Sprintf("/generate?login=%s", login)
 	token, err := g.request(ctx, path, nil)
 	if err != nil {
@@ -27,9 +26,8 @@ func (g *Gateway) GenerateToken(ctx context.Context, login string) (string, erro
 }
 
 func (g *Gateway) ValidateToken(ctx context.Context, token string) error {
-
-	path := fmt.Sprintf("/validate")
-	token, err := g.request(ctx, path, map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
+	path := "/validate"
+	_, err := g.request(ctx, path, map[string]string{"Authorization": fmt.Sprintf("Bearer %s", token)})
 	if err != nil {
 		return fmt.Errorf("request auth api: %w", err)
 	}

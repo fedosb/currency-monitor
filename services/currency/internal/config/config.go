@@ -28,8 +28,6 @@ func New() (Config, error) {
 		return Config{}, fmt.Errorf("read env: %w", err)
 	}
 
-	fmt.Printf("Config: %+v\n", cfg)
-
 	return Config{
 		DB:          cfg.DB,
 		Net:         cfg.Net,

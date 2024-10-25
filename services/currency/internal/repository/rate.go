@@ -100,7 +100,7 @@ func (r *RateRepository) GetByNameAndDate(ctx context.Context, name string, date
 		name, date)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return entity.Rate{}, errsinternal.NotFoundError
+			return entity.Rate{}, errsinternal.ErrNotFound
 		}
 
 		return entity.Rate{}, fmt.Errorf("select rate: %w", err)
