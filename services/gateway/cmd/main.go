@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/fedosb/currency-monitor/services/gateway/dto"
+	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/service"
 	"log"
 	"os/signal"

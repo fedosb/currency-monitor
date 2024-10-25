@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/fedosb/currency-monitor/services/gateway/dto"
+	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/entity"
 	hashutil "github.com/fedosb/currency-monitor/services/gateway/internal/utils/hash"
 )
