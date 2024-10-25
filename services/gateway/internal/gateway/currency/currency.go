@@ -103,7 +103,7 @@ func decodeGetByNameAndDateRangeResponse(resp *pb.GetByNameAndDateRangeResponse)
 }
 
 func (g *Gateway) connect(ctx context.Context) (*grpc.ClientConn, error) {
-	conn, err := grpc.DialContext(
+	conn, err := grpc.DialContext( // nolint:staticcheck
 		ctx,
 		g.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
