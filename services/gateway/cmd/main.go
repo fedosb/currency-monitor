@@ -3,14 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
-	"github.com/fedosb/currency-monitor/services/gateway/internal/service"
 	"log"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/gateway/auth"
+	"github.com/fedosb/currency-monitor/services/gateway/internal/gateway/currency"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/repository"
+	"github.com/fedosb/currency-monitor/services/gateway/internal/service"
 )
 
 func main() {
@@ -28,10 +30,25 @@ func run(ctx context.Context) error {
 	repo := repository.NewUserRepository()
 
 	authGW := auth.New("http://localhost:8082")
+	currencyGW := currency.New("localhost:50051")
 
 	authSvc := service.NewAuthService(repo, authGW)
+	currencySvc := service.NewCurrencyService(currencyGW)
 
-	err := authSvc.Init(ctx)
+	res, err := currencySvc.GetRateByNameAndDateRange(ctx, dto.GetByNameAndDateRangeRequest{
+		Name: "usd",
+		From: time.Now().Add(-time.Hour * 24),
+		To:   time.Now(),
+	})
+	fmt.Println(res, err)
+
+	res2, err := currencySvc.GetRateByNameAndDate(ctx, dto.GetByNameAndDateRequest{
+		Name: "usd",
+		Date: time.Now(),
+	})
+	fmt.Println(res2, err)
+
+	err = authSvc.Init(ctx)
 	fmt.Println(err)
 
 	token, err := authSvc.SignIn(ctx, dto.SignInRequest{
