@@ -23,7 +23,7 @@ func handleError(err error) error {
 	)
 
 	validationErr := &errsinternal.ValidationError{}
-	switch true {
+	switch {
 	case errors.As(err, &validationErr):
 		code = codes.InvalidArgument
 		msg = validationErr.Error()

@@ -3,10 +3,12 @@ package transport
 import (
 	"context"
 	"fmt"
-	errsinternal "github.com/fedosb/currency-monitor/services/currency/internal/errors"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/dto"
+	"github.com/fedosb/currency-monitor/services/currency/internal/entity"
+	errsinternal "github.com/fedosb/currency-monitor/services/currency/internal/errors"
 	pb "github.com/fedosb/currency-monitor/services/currency/proto"
 )
 
@@ -42,7 +44,7 @@ func (s *RateServer) GetByNameAndDate(ctx context.Context, req *pb.GetByNameAndD
 
 func decodeGetByNameAndDateRequest(req *pb.GetByNameAndDateRequest) (interface{}, error) {
 	if req.GetDate() == nil {
-		return nil, errsinternal.NewValidationError("date is required")
+		return nil, errsinternal.NewValidationError(entity.RateValidationDateRequiredMsg)
 	}
 
 	return dto.GetByNameAndDateRequest{
@@ -79,12 +81,8 @@ func (s *RateServer) GetByNameAndDateRange(ctx context.Context, req *pb.GetByNam
 }
 
 func decodeGetByNameAndDateRangeRequest(req *pb.GetByNameAndDateRangeRequest) (dto.GetByNameAndDateRangeRequest, error) {
-	if req.GetFrom() == nil {
-		return dto.GetByNameAndDateRangeRequest{}, errsinternal.NewValidationError("missing from")
-	}
-
-	if req.GetTo() == nil {
-		return dto.GetByNameAndDateRangeRequest{}, errsinternal.NewValidationError("missing to")
+	if req.GetFrom() == nil || req.GetTo() == nil {
+		return dto.GetByNameAndDateRangeRequest{}, errsinternal.NewValidationError(entity.RateValidationFromAndToRequiredMsg)
 	}
 
 	return dto.GetByNameAndDateRangeRequest{

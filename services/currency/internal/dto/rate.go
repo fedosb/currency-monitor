@@ -14,11 +14,11 @@ type GetByNameAndDateRequest struct {
 
 func (r GetByNameAndDateRequest) Validate() error {
 	if r.Name == "" {
-		return errsinternal.NewValidationError("name is required")
+		return errsinternal.NewValidationError(entity.RateValidationNameRequiredMsg)
 	}
 
 	if r.Date.IsZero() {
-		return errsinternal.NewValidationError("date is required")
+		return errsinternal.NewValidationError(entity.RateValidationDateRequiredMsg)
 	}
 
 	return nil
@@ -36,15 +36,15 @@ type GetByNameAndDateRangeRequest struct {
 
 func (r GetByNameAndDateRangeRequest) Validate() error {
 	if r.Name == "" {
-		return errsinternal.NewValidationError("name is required")
+		return errsinternal.NewValidationError(entity.RateValidationNameRequiredMsg)
 	}
 
 	if r.From.IsZero() || r.To.IsZero() {
-		return errsinternal.NewValidationError("from and to are required")
+		return errsinternal.NewValidationError(entity.RateValidationFromAndToRequiredMsg)
 	}
 
 	if r.From.After(r.To) {
-		return errsinternal.NewValidationError("from must be before to")
+		return errsinternal.NewValidationError(entity.RateValidationFromBeforeToMsg)
 	}
 
 	return nil
