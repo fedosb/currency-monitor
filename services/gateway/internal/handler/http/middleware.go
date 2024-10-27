@@ -54,6 +54,6 @@ func (h *Handler) logMiddleware(c *gin.Context) {
 		Str("client_ip", clientIP).
 		Str("method", method).
 		Str("path", path).
-		Err(fmt.Errorf(errorMessage)).
+		Str("error_message", errorMessage).
 		Send()
 }
