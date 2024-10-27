@@ -25,6 +25,8 @@ func respondError(c *gin.Context, err error) {
 		return
 	}
 
+	_ = c.Error(err)
+
 	var (
 		msg  string
 		code int
