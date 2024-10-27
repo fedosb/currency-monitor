@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/semaphore"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/config"
@@ -101,7 +101,7 @@ func (s *FetcherService) FetchAndUpdateRates(ctx context.Context) error {
 
 			err := s.processJob(ctx, job, rubRates)
 			if err != nil {
-				log.Println("Error processing job:", err)
+				log.Err(err).Msg("process job")
 			}
 		}(job)
 	}
@@ -151,7 +151,7 @@ func (s *FetcherService) failJob(ctx context.Context, job entity.FetchJob, reaso
 
 	_, err := s.jobRepository.Update(ctx, job)
 	if err != nil {
-		log.Println("Error failing job:", err)
+		log.Err(err).Msg("update job")
 	}
 }
 

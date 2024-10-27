@@ -2,8 +2,8 @@ package transport
 
 import (
 	"errors"
-	"log"
 
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -15,7 +15,7 @@ func handleError(err error) error {
 		return nil
 	}
 
-	log.Println(err)
+	log.Err(err).Msg("grpc error")
 
 	var (
 		code codes.Code

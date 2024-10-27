@@ -16,7 +16,9 @@ type GRPCServer struct {
 }
 
 func NewGRPCServer(svc RateService) *GRPCServer {
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.UnaryInterceptor(unaryLoggingInterceptor),
+	)
 
 	pb.RegisterRateServiceServer(server, NewServer(svc))
 	reflection.Register(server)

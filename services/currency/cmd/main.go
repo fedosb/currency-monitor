@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os/signal"
 	"syscall"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/config"
@@ -25,7 +25,7 @@ func main() {
 
 	err := run(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("run service")
 	}
 }
 
@@ -41,7 +41,7 @@ func run(ctx context.Context) error {
 	}
 
 	if cfg.DB.GetApplyMigrations() {
-		log.Println("Applying migrations...")
+		log.Info().Msg("Applying migrations")
 		if err := db.ApplyMigrations(); err != nil {
 			return fmt.Errorf("applying migrations: %w", err)
 		}
@@ -63,7 +63,7 @@ func run(ctx context.Context) error {
 	fetchSvc.Init(ctx, cfg.Fetcher.GetCurrencies())
 
 	if cfg.Fetcher.GetRunImmediately() {
-		log.Println("Running fetcher immediately...")
+		log.Info().Msg("Running fetcher immediately")
 		err := fetchSvc.FetchAndUpdateRates(ctx)
 		if err != nil {
 			return fmt.Errorf("running fetcher: %w", err)
@@ -80,7 +80,7 @@ func run(ctx context.Context) error {
 
 	var runGroup errgroup.Group
 	runGroup.Go(func() error {
-		log.Println("Starting gRPC server...")
+		log.Info().Msg("Starting gRPC server at " + cfg.Net.GetGRPCAddress())
 		err := grpcServer.Serve(cfg.Net)
 		if err != nil {
 			return err
@@ -90,7 +90,7 @@ func run(ctx context.Context) error {
 	})
 
 	runGroup.Go(func() error {
-		log.Println("Starting scheduler...")
+		log.Info().Msg("Starting scheduler")
 		scheduler.Start()
 		return nil
 	})
@@ -98,13 +98,13 @@ func run(ctx context.Context) error {
 	runGroup.Go(func() error {
 		<-ctx.Done()
 
-		log.Println("Shutting down scheduler...")
+		log.Info().Msg("Shutting down scheduler")
 		err := scheduler.Stop()
 		if err != nil {
-			log.Println("scheduler stop:", err)
+			log.Err(err).Msg("stopping scheduler")
 		}
 
-		log.Println("Shutting down gRPC server...")
+		log.Info().Msg("Shutting down gRPC server")
 		grpcServer.GracefulStop()
 
 		return nil
@@ -114,6 +114,8 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("run group: %w", err)
 	}
+
+	log.Info().Msg("Service stopped")
 
 	return nil
 }

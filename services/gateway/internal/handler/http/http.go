@@ -27,8 +27,8 @@ type CurrencyService interface {
 }
 
 func NewHandler(authSvc AuthService, currencySvc CurrencyService) *Handler {
-	router := gin.Default()
-
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 	router.Use(gin.Recovery())
 
 	h := Handler{
@@ -36,6 +36,8 @@ func NewHandler(authSvc AuthService, currencySvc CurrencyService) *Handler {
 		authSvc:     authSvc,
 		currencySvc: currencySvc,
 	}
+
+	router.Use(h.logMiddleware)
 
 	api := router.Group("/api")
 	{
