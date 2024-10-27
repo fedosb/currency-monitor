@@ -7,7 +7,7 @@ on:
 jobs:
 
   Lint-Currency:
-    name: Run lint
+    name: Run lint – Currency
     runs-on: ubuntu-latest
     steps:
       - name: Pull project
@@ -27,7 +27,7 @@ jobs:
           args: --timeout=3m
 
   Lint-Gateway:
-    name: Run lint
+    name: Run lint – Gateway
     runs-on: ubuntu-latest
     steps:
       - name: Pull project
