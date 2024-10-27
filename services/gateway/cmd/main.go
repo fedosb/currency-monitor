@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os/signal"
 	"syscall"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/fedosb/currency-monitor/services/gateway/internal/config"
@@ -25,7 +25,7 @@ func main() {
 
 	err := run(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("run service")
 	}
 }
 
@@ -44,6 +44,7 @@ func run(ctx context.Context) error {
 	authSvc := service.NewAuthService(repo, authGW)
 	currencySvc := service.NewCurrencyService(currencyGW)
 
+	log.Info().Msg("Init auth service...")
 	err = authSvc.Init(ctx)
 	if err != nil {
 		return fmt.Errorf("auth service init: %w", err)
@@ -58,6 +59,7 @@ func run(ctx context.Context) error {
 
 	var runGroup errgroup.Group
 	runGroup.Go(func() error {
+		log.Info().Msg("Starting http server at " + cfg.Net.GetHTTPAddress() + "...")
 		err := httpServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("http server: %w", err)
@@ -71,7 +73,7 @@ func run(ctx context.Context) error {
 
 		stopCtx := context.Background()
 
-		log.Println("Shutting down http server...")
+		log.Info().Msg("Shutting down http server...")
 		err := httpServer.Shutdown(stopCtx)
 		if err != nil {
 			return fmt.Errorf("http server shutdown: %w", err)
@@ -85,5 +87,6 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("run group: %w", err)
 	}
 
+	log.Info().Msg("Service stopped")
 	return nil
 }
