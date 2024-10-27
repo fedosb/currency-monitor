@@ -4,8 +4,6 @@ services:
   auth-generator:
     image: andrianovartemii/gm-test-task-auth-generator:latest
     container_name: currency-monitor-auth-generator
-    ports:
-      - "8082:8080"
     environment:
       AUTH_TOKEN_LIFETIME: 2
     networks:
@@ -14,8 +12,6 @@ services:
   currency-service:
     image: currency-service:latest
     container_name: currency-monitor-currency-service
-    ports:
-      - "50051:50051"
     environment:
       # Net config
       GRPC_ADDRESS: ":50051"
@@ -41,6 +37,24 @@ services:
       PROCESS_JOB_MAX_WORKERS: 1
       CURRENCIES: "usd,eur,gbp,algo"
       RUN_IMMEDIATELY: "true"
+    networks:
+      - currency-monitor-network
+
+  gateway-service:
+    image: gateway-service:latest
+    container_name: currency-monitor-gateway-service
+    ports:
+      - "8081:8081"
+    environment:
+      # Net config
+      HTTP_ADDRESS: ":8081"
+      # Auth API
+      AUTH_API_URL: "http://auth-generator:8080"
+      # Currency service
+      CURRENCY_SERVICE_ADDRESS: "currency-service:50051"
+    depends_on:
+      - currency-service
+      - auth-generator
     networks:
       - currency-monitor-network
 
