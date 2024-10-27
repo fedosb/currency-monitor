@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/config"
-	pb "github.com/fedosb/currency-monitor/services/currency/proto"
+	pb "github.com/fedosb/currency-monitor/services/currency/proto/currency"
 )
 
 type GRPCServer struct {

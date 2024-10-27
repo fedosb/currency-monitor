@@ -9,7 +9,7 @@ import (
 	"github.com/fedosb/currency-monitor/services/currency/internal/dto"
 	"github.com/fedosb/currency-monitor/services/currency/internal/entity"
 	errsinternal "github.com/fedosb/currency-monitor/services/currency/internal/errors"
-	pb "github.com/fedosb/currency-monitor/services/currency/proto"
+	pb "github.com/fedosb/currency-monitor/services/currency/proto/currency"
 )
 
 type RateServer struct {

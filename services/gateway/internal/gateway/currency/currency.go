@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/fedosb/currency-monitor/services/currency/proto"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
+	pb "github.com/fedosb/currency-monitor/services/gateway/proto/currency"
 )
 
 type Gateway struct {
