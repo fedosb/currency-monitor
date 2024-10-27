@@ -1,0 +1,84 @@
+name: Master CI/CD
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  Lint-Currency:
+    name: Run lint – Currency
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull project
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+
+      - name: Run lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          skip-pkg-cache: true
+          working-directory: services/currency
+          args: --timeout=3m
+
+  Lint-Gateway:
+    name: Run lint – Gateway
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull project
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+
+      - name: Run lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          skip-pkg-cache: true
+          working-directory: services/gateway
+          args: --timeout=3m
+
+  Build-and-Push-Currency:
+    name: Build and Push – Currency
+    needs:
+      - Lint-Currency
+      - Lint-Gateway
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull project
+        uses: actions/checkout@v2
+
+      - name: Build Image
+        run: cd services/currency && docker build -t ghcr.io/fedosb/currency-monitor/services/currency:latest .
+
+      - name: GHCR Login
+        run: docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} -p ${{ secrets.GHCR_TOKEN }}
+
+      - name: Push Image
+        run: docker push ghcr.io/fedosb/currency-monitor/services/currency:latest
+
+  Build-and-Push-Gateway:
+    name: Build and Push – Gateway
+    needs:
+      - Lint-Currency
+      - Lint-Gateway
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull project
+        uses: actions/checkout@v2
+
+      - name: Build Image
+        run: cd services/gateway && docker build -t ghcr.io/fedosb/currency-monitor/services/gateway:latest .
+
+      - name: GHCR Login
+        run: docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} -p ${{ secrets.GHCR_TOKEN }}
+
+      - name: Push Image
+        run: docker push ghcr.io/fedosb/currency-monitor/services/gateway:latest
