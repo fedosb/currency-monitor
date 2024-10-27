@@ -20,5 +20,7 @@ FROM alpine AS bin
 
 COPY --from=build /src/bin/app /
 
+LABEL org.opencontainers.image.source=https://github.com/fedosb/currency-monitor
+
 EXPOSE 8081
 CMD ["./app"]

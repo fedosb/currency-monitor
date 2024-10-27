@@ -10,7 +10,7 @@ services:
       - currency-monitor-network
 
   currency-service:
-    image: currency-service:latest
+    image: ghcr.io/fedosb/currency-monitor/services/currency:latest
     container_name: currency-monitor-currency-service
     environment:
       # Net config
@@ -41,7 +41,7 @@ services:
       - currency-monitor-network
 
   gateway-service:
-    image: gateway-service:latest
+    image: ghcr.io/fedosb/currency-monitor/services/gateway:latest
     container_name: currency-monitor-gateway-service
     ports:
       - "8081:8081"
