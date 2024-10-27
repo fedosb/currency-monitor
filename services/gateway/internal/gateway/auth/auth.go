@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/fedosb/currency-monitor/services/gateway/internal/config"
 )
 
 type Gateway struct {
@@ -11,8 +13,8 @@ type Gateway struct {
 	client  *http.Client
 }
 
-func New(url string) *Gateway {
-	return &Gateway{baseUrl: url, client: &http.Client{}}
+func New(cfg config.AuthApiConfig) *Gateway {
+	return &Gateway{baseUrl: cfg.GetURL(), client: &http.Client{}}
 }
 
 func (g *Gateway) GenerateToken(ctx context.Context, login string) (string, error) {

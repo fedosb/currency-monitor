@@ -11,6 +11,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/fedosb/currency-monitor/services/gateway/internal/config"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/gateway/auth"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/gateway/currency"
 	handlerhttp "github.com/fedosb/currency-monitor/services/gateway/internal/handler/http"
@@ -30,15 +31,20 @@ func main() {
 
 func run(ctx context.Context) error {
 
+	cfg, err := config.New()
+	if err != nil {
+		return fmt.Errorf("config: %w", err)
+	}
+
 	repo := repository.NewUserRepository()
 
-	authGW := auth.New("http://localhost:8082")
-	currencyGW := currency.New("localhost:50051")
+	authGW := auth.New(cfg.AuthAPI)
+	currencyGW := currency.New(cfg.CurrencyService)
 
 	authSvc := service.NewAuthService(repo, authGW)
 	currencySvc := service.NewCurrencyService(currencyGW)
 
-	err := authSvc.Init(ctx)
+	err = authSvc.Init(ctx)
 	if err != nil {
 		return fmt.Errorf("auth service init: %w", err)
 	}
@@ -46,7 +52,7 @@ func run(ctx context.Context) error {
 	handler := handlerhttp.NewHandler(authSvc, currencySvc)
 
 	httpServer := http.Server{
-		Addr:    ":8081",
+		Addr:    cfg.Net.GetHTTPAddress(),
 		Handler: handler.HTTPHandler(),
 	}
 

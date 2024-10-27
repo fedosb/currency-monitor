@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/fedosb/currency-monitor/services/gateway/internal/config"
 	"github.com/fedosb/currency-monitor/services/gateway/internal/dto"
 	pb "github.com/fedosb/currency-monitor/services/gateway/proto/currency"
 )
@@ -17,8 +18,8 @@ type Gateway struct {
 	Address string
 }
 
-func New(Address string) *Gateway {
-	return &Gateway{Address: Address}
+func New(cfg config.CurrencyServiceConfig) *Gateway {
+	return &Gateway{Address: cfg.GetAddress()}
 }
 
 func (g *Gateway) GetRateByNameAndDate(ctx context.Context, name string, date time.Time) (dto.Rate, error) {

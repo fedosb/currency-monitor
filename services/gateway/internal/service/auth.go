@@ -32,6 +32,8 @@ func NewAuthService(userRepository UserRepository, authGateway AuthGateway) *Aut
 	}
 }
 
+// Init creates users with passwords which are hardcoded in the method.
+// This method will be get rid of in the future when the registration is implemented.
 func (s *AuthService) Init(ctx context.Context) error {
 	users := map[string]string{
 		"user":  "password",
