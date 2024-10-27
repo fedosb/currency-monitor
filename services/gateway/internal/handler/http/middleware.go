@@ -35,7 +35,6 @@ func (h *Handler) authMiddleware(c *gin.Context) {
 }
 
 func (h *Handler) logMiddleware(c *gin.Context) {
-
 	start := time.Now()
 	path := c.Request.URL.Path
 

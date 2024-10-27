@@ -3,10 +3,10 @@ package cron
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
+	"github.com/rs/zerolog/log"
 
 	"github.com/fedosb/currency-monitor/services/currency/internal/config"
 )
@@ -59,14 +59,14 @@ func (s *Scheduler) setupFetchAndUpdateRates(ctx context.Context) error {
 		gocron.DurationJob(s.fetchInterval),
 		gocron.NewTask(
 			func(svc FetcherService, ctx context.Context) {
-				log.Println("Fetching rates")
+				log.Info().Msg("fetching and updating rates")
 
 				ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), s.fetchInterval)
 				defer cancel()
 
 				err := svc.FetchAndUpdateRates(ctx)
 				if err != nil {
-					log.Println(err)
+					log.Err(err).Msg("fetch and update rates")
 				}
 			}, s.fetcherService, ctx,
 		),
@@ -84,14 +84,14 @@ func (s *Scheduler) setupRequeueFailedJobs(ctx context.Context) error {
 		gocron.DurationJob(s.requeueInterval),
 		gocron.NewTask(
 			func(svc FetcherService, ctx context.Context) {
-				log.Println("Requeuing failed jobs")
+				log.Info().Msg("requeueing failed jobs")
 
 				ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), s.requeueInterval)
 				defer cancel()
 
 				err := svc.RequeueFailedJobs(ctx)
 				if err != nil {
-					log.Println(err)
+					log.Err(err).Msg("requeue failed jobs")
 				}
 			}, s.fetcherService, ctx,
 		),

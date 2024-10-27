@@ -2,7 +2,6 @@ package transport
 
 import (
 	"errors"
-	"log"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,8 +13,6 @@ func handleError(err error) error {
 	if err == nil {
 		return nil
 	}
-
-	log.Println(err)
 
 	var (
 		code codes.Code

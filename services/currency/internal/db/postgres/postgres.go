@@ -34,6 +34,8 @@ func New(cfg config.DBConfig) (*DB, error) {
 }
 
 func (db *DB) ApplyMigrations() error {
+	goose.SetLogger(gooseLogger{})
+
 	if err := goose.SetDialect(postgresDriver); err != nil {
 		return fmt.Errorf("set goose dialect: %w", err)
 	}
@@ -46,6 +48,8 @@ func (db *DB) ApplyMigrations() error {
 }
 
 func (db *DB) RollbackMigrations() error {
+	goose.SetLogger(gooseLogger{})
+
 	if err := goose.SetDialect(postgresDriver); err != nil {
 		return fmt.Errorf("set goose dialect: %w", err)
 	}
