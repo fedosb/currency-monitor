@@ -41,7 +41,7 @@ func (h *Handler) logMiddleware(c *gin.Context) {
 	c.Next()
 
 	// Stop timer
-	latency := time.Now().Sub(start)
+	latency := time.Since(start)
 
 	clientIP := c.ClientIP()
 	method := c.Request.Method
