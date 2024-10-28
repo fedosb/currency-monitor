@@ -19,7 +19,7 @@ The **gateway** service handles authentication and interaction with the **curren
 - Requests to fetch currency rates by name and date.
 - Requests to fetch currency rates by name and a date range.
 
-**How to Run the Project**
+## How to Run the Project
 
 1. Navigate to the `deployment/local` directory and start the infrastructure using the `docker-compose-infrastructure.yml` file (this starts the database).
     - Command:
@@ -32,7 +32,7 @@ The **gateway** service handles authentication and interaction with the **curren
       ```bash
       docker-compose -f docker-compose.yml up -d
       ```
-**Currency Service Configuration**
+## Currency Service Configuration
 
 The **currency** service has several environment variables to configure network, API, database, and job management settings:
 
@@ -56,9 +56,9 @@ The **currency** service has several environment variables to configure network,
     - `CURRENCIES`: List of currencies to monitor (e.g., `usd,eur,gbp,algo`).
     - `RUN_IMMEDIATELY`: Whether to start the cron for monitoring jobs right away (`true`).
 
-### Endpoints
+## Endpoints
 
-#### Sign In
+### Sign In
 Endpoint for user authentication.
 
 **Request:**
@@ -95,7 +95,7 @@ curl --location 'http://localhost:8081/api/sign-in' \
 
 ---
 
-#### Get Currency Rate by Name and Date
+### Get Currency Rate by Name and Date
 Retrieve the exchange rate for a specified currency on a particular date.
 
 **Request:**
@@ -147,7 +147,7 @@ curl --location 'http://localhost:8081/api/currency/usd?date=2024-10-27' \
 
 ---
 
-#### Get Currency Rates by Name and Date Range
+### Get Currency Rates by Name and Date Range
 Retrieve the exchange rates for a specified currency within a given date range.
 
 **Request:**
