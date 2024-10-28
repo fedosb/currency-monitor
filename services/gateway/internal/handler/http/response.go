@@ -32,12 +32,12 @@ func respondError(c *gin.Context, err error) {
 		code int
 	)
 
-	currencyError := &errsinternal.GatewayError{}
+	gatewayError := &errsinternal.GatewayError{}
 	authError := &errsinternal.AuthError{}
 	switch {
-	case errors.As(err, &currencyError):
-		msg = currencyError.Error()
-		code = codeutil.GRPCCodeToHTTPStatus(currencyError.Code)
+	case errors.As(err, &gatewayError):
+		msg = gatewayError.Error()
+		code = codeutil.GRPCCodeToHTTPStatus(gatewayError.Code)
 	case errors.As(err, &authError):
 		msg = authError.Message
 		code = http.StatusUnauthorized
